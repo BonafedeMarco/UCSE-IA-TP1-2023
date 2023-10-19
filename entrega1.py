@@ -1,10 +1,10 @@
 from simpleai.search import SearchProblem
-from simpleai.search.traditional import breadth_first, depth_first, limited_depth_first, iterative_limited_depth_first, \
-    uniform_cost, greedy, astar
+from simpleai.search.traditional import breadth_first, depth_first, limited_depth_first, iterative_limited_depth_first, uniform_cost, greedy, astar
 from simpleai.search.viewers import WebViewer, ConsoleViewer, BaseViewer
 import math
 
-''' secuencia = jugar(
+''' 
+secuencia = jugar(
     filas=5,
     columnas=5,
     pisos=3,
@@ -19,23 +19,38 @@ import math
         ...
     ],
     pieza_sacar="pieza_roja",
-) '''
+) 
+'''
 
 INITIAL_STATE = (("pieza_verde", 0, ((0, 0), (0, 1), (0, 2))),
                  ("pieza_roja", 0, ((1, 0), (2, 0))),
                  ("pieza_azul", 2, ((1, 0), (1, 1), (2, 1)))
-)
+                )
 
 PISOS = 2
 FILAS = 5
 COLUMNAS = 5
-SALIDA = (0, 3, 1)
+SALIDA = (0, 3, 1) 
 PIEZA_SACAR = "pieza_roja"
 
-class RushHourProblem(SearchProblem):
+def obtener_pieza_objetivo(self, state, pieza_a_retornar = PIEZA_SACAR):
+    return list([pieza for pieza in state if pieza[0] == pieza_a_retornar][0])
 
-    def obtener_pieza_objetivo(self, state):
-        return list([pieza for pieza in state if pieza[0] == PIEZA_SACAR][0])
+def obtener_pieza_mismo_piso(self, state, piso):
+    return list([pieza for pieza in state if pieza[1] == piso])
+
+def es_movimiento_valido(self, state, pieza_a_mover):
+    nombre_pieza, piso_pieza, posiciones_partes = pieza_a_mover
+
+    posiciones_ocupadas = obtener_pieza_mismo_piso(state, piso_pieza)
+
+    
+    
+    
+    return True 
+
+
+class RushHourProblem(SearchProblem):
 
     def is_goal(self, state):
         nombre_pieza, piso_pieza, posiciones_partes = obtener_pieza_objetivo(state)
@@ -51,7 +66,28 @@ class RushHourProblem(SearchProblem):
         return 1
 
     def actions(self, state):
+        piso_salida, fila_salida, col_salida = SALIDA
         acciones = []
+
+        for pieza in state:
+            nombre_pieza, piso_pieza, posiciones_partes = pieza
+
+            if piso_pieza > 0:
+
+
+
+            # #Si la pieza puede bajar
+            # if piso_pieza > 0:
+            #     if es_movimiento_vertical_valido(state, pieza, "caer"):
+            #         acciones.append((nombre_pieza, "caer"))
+
+            # #Si la pieza puede subir
+            # if piso_pieza < PISOS:
+            #     if es_movimiento_vertical_valido(state, pieza, "trepar"):
+            #         acciones.append((nombre_pieza, "trepar"))
+
+
+            
         return acciones
 
     def heuristic(self, state):
