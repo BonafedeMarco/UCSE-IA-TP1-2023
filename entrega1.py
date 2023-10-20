@@ -1,5 +1,6 @@
 from simpleai.search import SearchProblem
-from simpleai.search.traditional import breadth_first, depth_first, limited_depth_first, iterative_limited_depth_first, uniform_cost, greedy, astar
+from simpleai.search.traditional import breadth_first, depth_first, limited_depth_first, iterative_limited_depth_first, \
+    uniform_cost, greedy, astar
 from simpleai.search.viewers import WebViewer, ConsoleViewer, BaseViewer
 import math
 
@@ -25,47 +26,77 @@ secuencia = jugar(
 INITIAL_STATE = (("pieza_verde", 0, ((0, 0), (0, 1), (0, 2))),
                  ("pieza_roja", 0, ((1, 0), (2, 0))),
                  ("pieza_azul", 2, ((1, 0), (1, 1), (2, 1)))
-                )
+)
 
-PISOS = 2
+PISOS = 3
 FILAS = 5
 COLUMNAS = 5
-SALIDA = (0, 3, 1) 
+SALIDA = (0, 3, 1)
 PIEZA_SACAR = "pieza_roja"
 
-def obtener_pieza_objetivo(self, state, pieza_a_retornar = PIEZA_SACAR):
+
+def obtener_pieza_objetivo(state, pieza_a_retornar=PIEZA_SACAR):
     return list([pieza for pieza in state if pieza[0] == pieza_a_retornar][0])
 
-def obtener_piezas_mismo_piso(self, state, piso):
+
+def obtener_piezas_mismo_piso(state, piso):
     return list([pieza for pieza in state if pieza[1] == piso])
 
-def es_movimiento_valido(self, state, pieza_a_mover):
+
+def es_movimiento_valido(state, pieza_a_mover):
     nombre_pieza, piso_pieza, posiciones_partes = pieza_a_mover
 
     piezas_mismo_piso = obtener_piezas_mismo_piso(state, piso_pieza)
+
+    if piso_pieza < 0 or piso_pieza >= PISOS:
+        return False
+
+    for coordenada in posiciones_partes:
+        if not (0 <= coordenada[0] < FILAS):
+            return False
+
+        if not (0 <= coordenada[1] < COLUMNAS):
+            return False
 
     for pieza in piezas_mismo_piso:
         if bool(set(pieza[2]) & set(posiciones_partes)):
             return False
     return True
-def calcular_nueva_posicion(self, posicion_actual, movimiento):
-    mod_x = 0
-    mod_y = 0
-    mod_z = 0
+
+
+def calcular_nueva_posicion(pieza_a_mover, movimiento):
+    nombre_pieza, piso_pieza, posiciones_partes = pieza_a_mover
+
+    mod_fila = 0
+    mod_columna = 0
+    mod_piso = 0
 
     if movimiento == "arriba":
+        mod_fila = 1
 
     if movimiento == "abajo":
+        mod_fila = -1
 
     if movimiento == "derecha":
+        mod_columna = 1
 
     if movimiento == "izquierda":
+        mod_columna = -1
 
     if movimiento == "trepar":
+        mod_piso = 1
 
     if movimiento == "caer":
+        mod_piso = -1
 
-    for coordenada in posicion_actual:
+    piso_pieza += mod_piso
+
+    for coordenada in list(map(list, posiciones_partes)):
+        coordenada[0] += mod_fila
+        coordenada[1] += mod_columna
+
+    return nombre_pieza, piso_pieza, posiciones_partes
+
 
 class RushHourProblem(SearchProblem):
 
@@ -83,28 +114,16 @@ class RushHourProblem(SearchProblem):
         return 1
 
     def actions(self, state):
-        piso_salida, fila_salida, col_salida = SALIDA
         acciones = []
+        movimientos = ("caer", "trepar", "arriba", "abajo", "derecha", "izquierda")
 
         for pieza in state:
             nombre_pieza, piso_pieza, posiciones_partes = pieza
 
-            if piso_pieza > 0:
+            for movimiento in movimientos:
+                if es_movimiento_valido(state, calcular_nueva_posicion(pieza, movimiento)):
+                    acciones.append((nombre_pieza, movimiento))
 
-
-
-            # #Si la pieza puede bajar
-            # if piso_pieza > 0:
-            #     if es_movimiento_vertical_valido(state, pieza, "caer"):
-            #         acciones.append((nombre_pieza, "caer"))
-
-            # #Si la pieza puede subir
-            # if piso_pieza < PISOS:
-            #     if es_movimiento_vertical_valido(state, pieza, "trepar"):
-            #         acciones.append((nombre_pieza, "trepar"))
-
-
-            
         return acciones
 
     def heuristic(self, state):
@@ -128,20 +147,39 @@ class RushHourProblem(SearchProblem):
 
         for parte in coordenadas_partes_absolutas:
             piso, fila, col = parte
-            distancias = []
-            distancias.append(abs(piso - piso_salida))
-            distancias.append(abs(fila - fila_salida))
-            distancias.append(abs(col - col_salida))
+            distancias = [abs(piso - piso_salida), abs(fila - fila_salida), abs(col - col_salida)]
             movimientos_por_parte.append(sum(distancias))
 
         return min(movimientos_por_parte)
 
     def result(self, state, action):
-        return state
+        nombre_pieza, piso_pieza, posiciones_partes = calcular_nueva_posicion(obtener_pieza_objetivo(state, action[0]), action[1])
+
+        state = list(map(list, state))
+
+        for pieza in state:
+            if pieza[0] == nombre_pieza:
+                pieza[1] = piso_pieza
+                pieza[2] = list(map(list, pieza[2]))
+                pieza[2] = posiciones_partes
+                pieza[2] = tuple(map(tuple, pieza[2]))
+                break
+
+        return tuple(map(tuple, state))
 
 
 def jugar(self, filas, columnas, pisos, salida, piezas, pieza_sacar):
     return
 
+
 if __name__ == '__main__':
-    main()
+    my_problem = RushHourProblem(INITIAL_STATE)
+
+    v = WebViewer()
+
+    result = astar(my_problem, viewer=v)
+
+    for action, state in result.path():
+        print("A:", action)
+        print("S:", state)
+        print()
