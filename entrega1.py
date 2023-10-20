@@ -36,19 +36,36 @@ PIEZA_SACAR = "pieza_roja"
 def obtener_pieza_objetivo(self, state, pieza_a_retornar = PIEZA_SACAR):
     return list([pieza for pieza in state if pieza[0] == pieza_a_retornar][0])
 
-def obtener_pieza_mismo_piso(self, state, piso):
+def obtener_piezas_mismo_piso(self, state, piso):
     return list([pieza for pieza in state if pieza[1] == piso])
 
 def es_movimiento_valido(self, state, pieza_a_mover):
     nombre_pieza, piso_pieza, posiciones_partes = pieza_a_mover
 
-    posiciones_ocupadas = obtener_pieza_mismo_piso(state, piso_pieza)
+    piezas_mismo_piso = obtener_piezas_mismo_piso(state, piso_pieza)
 
-    
-    
-    
-    return True 
+    for pieza in piezas_mismo_piso:
+        if bool(set(pieza[2]) & set(posiciones_partes)):
+            return False
+    return True
+def calcular_nueva_posicion(self, posicion_actual, movimiento):
+    mod_x = 0
+    mod_y = 0
+    mod_z = 0
 
+    if movimiento == "arriba":
+
+    if movimiento == "abajo":
+
+    if movimiento == "derecha":
+
+    if movimiento == "izquierda":
+
+    if movimiento == "trepar":
+
+    if movimiento == "caer":
+
+    for coordenada in posicion_actual:
 
 class RushHourProblem(SearchProblem):
 
