@@ -161,12 +161,9 @@ for pieza in variables:
 
 
 def verificar_cantidad_piezas(variables, values):
-    lista_pisos = []
+    lista_pisos = set(pieza[0] for pieza in values)
+    return len(lista_pisos) == PISO
 
-    for pieza in values:
-        lista_pisos.append(pieza[0])
-
-    return len(set(lista_pisos)) == PISO
 
 
 restricciones.append((variables, verificar_cantidad_piezas))
