@@ -33,8 +33,9 @@ piezas = [
 ]
 pieza_sacar = "pieza_roja"
 
+
+
 tablero = armar_tablero(filas, columnas, pisos, salida, piezas, pieza_sacar)
 
-print(tablero)
 for pieza in tablero:
-    print(pieza, tablero[pieza])
+    print(pieza, tablero[pieza], dict(piezas)[pieza])

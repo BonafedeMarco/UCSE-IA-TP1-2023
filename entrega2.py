@@ -6,7 +6,6 @@ from simpleai.search import (
     MOST_CONSTRAINED_VARIABLE,
     HIGHEST_DEGREE_VARIABLE,
     LEAST_CONSTRAINING_VALUE,
-    local
 )
 from simpleai.search.csp import _find_conflicts
 
@@ -51,6 +50,12 @@ CASILLERO_SALIDA = ()
 
 
 def generar_dominios():
+    '''
+    Define los dominios de todas las piezas,
+    teniendo en cuenta su forma para que no se
+    salgan del tablero
+    '''
+
     for pieza in PIEZAS_TIPO:
         matriz_pieza = TIPOS_PIEZAS[PIEZAS_TIPO[pieza]]
         dominio = []
@@ -64,6 +69,11 @@ def generar_dominios():
 
 
 def generar_pieza(tipo, coordenada_inicio):
+    '''
+    Retorna una lista de coordenadas en par (fila, columna)
+    en base a la esquina superior izquierda y la forma
+    '''
+
     coordenadas = []
 
     matriz_pieza = TIPOS_PIEZAS[tipo]
@@ -78,18 +88,25 @@ def generar_pieza(tipo, coordenada_inicio):
 
 
 def verificar_no_colision(variables, values):
+    '''
+    Verifica que los bloques de piezas
+    en el mismo piso no colisionen
+    entre sí.
+    '''
+
     inicio_pieza_1, inicio_pieza_2 = values
     pieza_1, pieza_2 = variables
 
     tipo_pieza_1 = PIEZAS_TIPO[pieza_1]
     tipo_pieza_2 = PIEZAS_TIPO[pieza_2]
+
     if inicio_pieza_1[0] == inicio_pieza_2[0]:
+
         coordenadas_p1 = tuple(map(tuple, generar_pieza(tipo_pieza_1, inicio_pieza_1)))
         coordenadas_p2 = tuple(map(tuple, generar_pieza(tipo_pieza_2, inicio_pieza_2)))
 
-        # Verifica colisiones
-
         if (tipo_pieza_1  == ".") or (tipo_pieza_2 == "."):
+
             if (tipo_pieza_1  == ".") and (tipo_pieza_2  == "."):
                 return coordenadas_p1 != coordenadas_p2
 
@@ -99,6 +116,7 @@ def verificar_no_colision(variables, values):
             if (tipo_pieza_2  == "."):
                 return coordenadas_p2[0] not in coordenadas_p1
 
+
         if bool(set(coordenadas_p1) & set(coordenadas_p2)):
             return False
 
@@ -107,13 +125,16 @@ def verificar_no_colision(variables, values):
 
 
 def verificar_salida_libre(variables, values):
-    piso, fila, columna = values
+    '''
+    Verifica que ninguna bloque se ubique en
+    el mismo casillero que la salida
+    '''
+
+    piso, fila, columna = values[0]
     piso_s, fila_s, columna_s = CASILLERO_SALIDA
 
     if piso == piso_s:
-        coordenadas_pieza = tuple(map(tuple, generar_pieza(PIEZAS_TIPO[variables], values)))
-
-        # Verifica colisiones
+        coordenadas_pieza = tuple(map(tuple, generar_pieza(PIEZAS_TIPO[variables[0]], values[0])))
 
         if len(coordenadas_pieza) == 1:
             return coordenadas_pieza != (fila_s, columna_s)
@@ -126,12 +147,21 @@ def verificar_salida_libre(variables, values):
 
 
 def verificar_cantidad_piezas(variables, values):
+    '''
+    Verifica que haya al menos una pieza por piso
+    '''
+
     lista_pisos = set(pieza[0] for pieza in values)
     return len(lista_pisos) == PISOS
 
 
 
 def verificar_cantidad_piezas_pisos(variables, values):
+    '''
+    Verifica que ningún piso tenga más del
+    doble de piezas que el que menos tiene
+    '''
+
     piezas_por_piso = [0 for x in range(PISOS)]
 
     for pieza in values:
@@ -142,6 +172,11 @@ def verificar_cantidad_piezas_pisos(variables, values):
 
 
 def verificar_cantidad_bloques_piso(variables, values):
+    '''
+    Verifica que la cantidad de casillas ocupadas por piso
+    no exceda 3/4 de la cantidad total del mismo
+    '''
+
     bloques_por_piso = [[] for x in range(PISOS)]
 
     for indice_pieza, pieza in enumerate(values):
@@ -156,18 +191,30 @@ def verificar_cantidad_bloques_piso(variables, values):
 
 
 def pieza_sacar_distinto_piso_salida(variables, values):
-    return values[0] != CASILLERO_SALIDA
+    '''
+    Verifica que la pieza a sacar no este en el mismo
+    piso que la salida
+    '''
+
+    return values[0][0] != CASILLERO_SALIDA[0]
 
 
 
 def generar_restricciones():
+    '''
+    Agrega todas las restricciones a la lista
+    dado que ejecutar el programa con el if name main
+    o desde un archivo aparte no corre
+    el codigo suelto
+    '''
+
     # Colisiones entre piezas
     for pieza1, pieza2 in combinations(PIEZAS, 2):
         restricciones.append(((pieza1, pieza2), verificar_no_colision))
 
     # Ninguna pieza sobre la salida
     for pieza in PIEZAS:
-        restricciones.append((pieza, verificar_salida_libre))
+        restricciones.append(([pieza], verificar_salida_libre))
 
     # Una pieza por piso como mínimo
     restricciones.append((PIEZAS, verificar_cantidad_piezas))
@@ -179,11 +226,16 @@ def generar_restricciones():
     restricciones.append((PIEZAS, verificar_cantidad_bloques_piso))
 
     # Pieza a sacar en distinto piso a la salida
-    restricciones.append((PIEZA_SACAR, pieza_sacar_distinto_piso_salida))
+    restricciones.append(([PIEZA_SACAR], pieza_sacar_distinto_piso_salida))
 
 
 
 def armar_tablero(filas, columnas, pisos, salida, piezas, pieza_sacar):
+    '''
+    Funcion para correr el programa desde
+    otro archivo
+    '''
+
     global PISOS
     global FILAS
     global COLUMNAS
@@ -201,6 +253,8 @@ def armar_tablero(filas, columnas, pisos, salida, piezas, pieza_sacar):
     PIEZAS = [key for key in PIEZAS_TIPO]
 
     generar_dominios()
+
+    generar_restricciones()
 
     problema = CspProblem(PIEZAS, DOMINIOS, restricciones)
     #solucion = backtrack(problema, variable_heuristic=MOST_CONSTRAINED_VARIABLE, value_heuristic=LEAST_CONSTRAINING_VALUE)
@@ -222,7 +276,11 @@ if __name__ == "__main__":
             "pieza_roja": "T",
             "pieza_azul": "O",
             "pieza_violeta": "I",
-            "pieza_rosada": "-",
+            "pieza_rosada": ".",
+            "pieza_marron": "Z",
+            "pieza_amarilla": ".",
+            "pieza_celeste": "O",
+            "pieza_naranja": "I",
             }
     PIEZAS = [key for key in PIEZAS_TIPO]
 
@@ -234,5 +292,5 @@ if __name__ == "__main__":
     #solucion = backtrack(problema, variable_heuristic=MOST_CONSTRAINED_VARIABLE, value_heuristic=LEAST_CONSTRAINING_VALUE)
     solucion = min_conflicts(problema)
 
+    print("Solucion:")
     print(solucion)
-    print(_find_conflicts(problema, solucion))
