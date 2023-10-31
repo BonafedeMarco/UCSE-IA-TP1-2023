@@ -174,7 +174,7 @@ def verificar_cantidad_piezas_pisos(variables, values):
 def verificar_cantidad_bloques_piso(variables, values):
     '''
     Verifica que la cantidad de casillas ocupadas por piso
-    no exceda 3/4 de la cantidad total del mismo
+    no exceda 2/3 de la cantidad total del mismo
     '''
 
     bloques_por_piso = [[] for x in range(PISOS)]
@@ -183,7 +183,7 @@ def verificar_cantidad_bloques_piso(variables, values):
         bloques_por_piso[pieza[0]].extend(generar_pieza(PIEZAS_TIPO[PIEZAS[indice_pieza]], pieza))
 
     for piso in bloques_por_piso:
-        if len(piso) > ((FILAS * COLUMNAS) / 4) * 3:
+        if len(piso) > ((FILAS * COLUMNAS) / 3) * 2:
             return False
 
     return True
