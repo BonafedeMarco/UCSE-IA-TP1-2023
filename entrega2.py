@@ -137,7 +137,7 @@ def verificar_salida_libre(variables, values):
         coordenadas_pieza = tuple(map(tuple, generar_pieza(PIEZAS_TIPO[variables[0]], values[0])))
 
         if len(coordenadas_pieza) == 1:
-            return coordenadas_pieza != (fila_s, columna_s)
+            return coordenadas_pieza[0] != (fila_s, columna_s)
 
         if (fila_s, columna_s) in coordenadas_pieza:
             return False
