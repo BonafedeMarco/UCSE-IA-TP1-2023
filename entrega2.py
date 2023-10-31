@@ -38,10 +38,6 @@ PIEZAS_TIPO = {}
 
 PIEZAS = []
 
-DOMINIOS = {}
-
-restricciones = []
-
 PISOS = 0
 FILAS = 0
 COLUMNAS = 0
@@ -55,6 +51,7 @@ def generar_dominios():
     teniendo en cuenta su forma para que no se
     salgan del tablero
     '''
+    DOMINIOS = {}
 
     for pieza in PIEZAS_TIPO:
         matriz_pieza = TIPOS_PIEZAS[PIEZAS_TIPO[pieza]]
@@ -65,6 +62,8 @@ def generar_dominios():
                     dominio.append((piso, row, col))
 
         DOMINIOS[pieza] = dominio
+
+    return DOMINIOS
 
 
 
@@ -207,6 +206,7 @@ def generar_restricciones():
     o desde un archivo aparte no corre
     el codigo suelto
     '''
+    restricciones = []
 
     # Colisiones entre piezas
     for pieza1, pieza2 in combinations(PIEZAS, 2):
@@ -227,6 +227,8 @@ def generar_restricciones():
 
     # Pieza a sacar en distinto piso a la salida
     restricciones.append(([PIEZA_SACAR], pieza_sacar_distinto_piso_salida))
+
+    return restricciones
 
 
 
@@ -252,9 +254,9 @@ def armar_tablero(filas, columnas, pisos, salida, piezas, pieza_sacar):
     PIEZAS_TIPO = dict(piezas)
     PIEZAS = [key for key in PIEZAS_TIPO]
 
-    generar_dominios()
+    DOMINIOS = generar_dominios()
 
-    generar_restricciones()
+    restricciones = generar_restricciones()
 
     problema = CspProblem(PIEZAS, DOMINIOS, restricciones)
     #solucion = backtrack(problema, variable_heuristic=MOST_CONSTRAINED_VARIABLE, value_heuristic=LEAST_CONSTRAINING_VALUE)
